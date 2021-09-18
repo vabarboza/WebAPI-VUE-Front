@@ -18,7 +18,14 @@
         </div>
         <div class="col-md-2">
           <label class="form-label">Categoria</label>
-          <input type="text" class="form-control" v-model="produto.categoria_id" required />
+          <select class="form-select" v-model="produto.categoria_id">
+            <option selected></option>
+            <option
+              v-for="categoria of categorias"
+              :key="categoria.id"
+              :value="categoria.id"
+            >{{categoria.titulo}}</option>
+          </select>
         </div>
         <div class="col-md-12">
           <label class="form-label">Descrição do Produto</label>
@@ -40,7 +47,7 @@
             <th scope="col">Categoria</th>
             <th scope="col">Valor</th>
             <th scope="col">Quantidade</th>
-            <th scope="col"> Ação</th>
+            <th scope="col">Ação</th>
           </tr>
         </thead>
         <tbody>
@@ -51,8 +58,12 @@
             <td>{{ produto.categoria_id }}</td>
             <td>{{ produto.valor }}</td>
             <td>{{ produto.quantidade }}</td>
-            <td><button @click="editar(produto)" type="button" class="btn btn-primary btn-sm">Editar</button></td>
-            <td><button @click="remover(produto)" type="button" class="btn btn-danger btn-sm">Apagar</button></td>
+            <td>
+              <button @click="editar(produto)" type="button" class="btn btn-primary btn-sm">Editar</button>
+            </td>
+            <td>
+              <button @click="remover(produto)" type="button" class="btn btn-danger btn-sm">Apagar</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -74,11 +85,13 @@ export default {
         quantidade: "",
       },
       produtos: [],
+      categorias: [],
     };
   },
 
   mounted() {
-    this.listar()
+    this.listar();
+    this.listarCategorias();
   },
 
   methods: {
@@ -92,34 +105,43 @@ export default {
     salvar() {
       if (!this.produto.id) {
         Produto.salvarProdutos(this.produto).then((resposta) => {
-          this.produto = {}
+          this.produto = {};
           console.log(resposta);
-          alert('Produto cadastrado!');
-          this.listar()
+          alert("Produto cadastrado!");
+          this.listar();
         });
       } else {
-        Produto.atualizaProduto(this.produto, this.produto.id).then((resposta) => {
-          this.produto = {}
+        Produto.atualizaProduto(this.produto, this.produto.id).then(
+          (resposta) => {
+            this.produto = {};
+            console.log(resposta);
+            alert("Atualizado com sucesso!");
+            this.listar();
+          }
+        );
+      }
+    },
+
+    editar(produto) {
+      this.produto = produto;
+    },
+
+    remover(produto) {
+      if (confirm("Deseja realmente excluir o produto?")) {
+        Produto.removeProduto(produto.id).then((resposta) => {
+          alert("Produto removido");
+          this.listar();
           console.log(resposta);
-          alert('Atualizado com sucesso!');
-          this.listar()
         });
       }
     },
 
-    editar(produto){
-      this.produto = produto
+    listarCategorias() {
+      Produto.listarCategorias().then((resposta) => {
+        console.log(resposta.data);
+        this.categorias = resposta.data;
+      });
     },
-
-    remover(produto){
-      if (confirm('Deseja realmente excluir o produto?')) {
-        Produto.removeProduto(produto.id).then(resposta => {
-          alert('Produto removido')
-          this.listar()
-          console.log(resposta)
-        })
-      }
-    }
   },
 };
 </script>
